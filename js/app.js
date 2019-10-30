@@ -1,86 +1,151 @@
 (() => {
-    const EVENTS = {
-        addToCartListener() {
-            let productInner = document.querySelectorAll('.card')
-            productInner.forEach(product => {
-                product.addEventListener('click', METHODS.addItemToCart)
-            })
-        },
+  const EVENTS = {
+    addToCartListener() {
+      let productInner = document.querySelectorAll(".card");
+      productInner.forEach(product => {
+        product.addEventListener("click", METHODS.addItemToCart);
+      });
+    },
 
-        deleteItemFromCartListener(){
-            let findDeleteButtonFromChart = document.querySelectorAll('.borrar-curso')
-            findDeleteButtonFromChart.forEach(deleteButton => {
-                deleteButton.addEventListener('click', METHODS.deleteItem)
-                })  
-            
-        },
+    deleteItemFromCartListener() {
+      let findDeleteButtonFromChart = document.querySelectorAll(
+        ".borrar-curso"
+      );
+      findDeleteButtonFromChart.forEach(deleteButton => {
+        deleteButton.addEventListener("click", METHODS.deleteItem);
+      });
+    },
 
-        deleteAllItemsListener(){
-            let removeAllButton = document.getElementById('vaciar-carrito')
-            removeAllButton.addEventListener('click', METHODS.deleteAllItems)
-        }
-    }
-    const METHODS = {
-        start(){
-        EVENTS.addToCartListener()
-        EVENTS.deleteAllItemsListener()
-        // EVENTS.deleteItemFromCart()
-        },
-        addItemToCart(product) {
-            product.preventDefault()
-            console.log(product)
-            if (product.target.classList.contains('agregar-carrito')){
-                console.log(`producto en addItemToCart ${product}` )
-                const item = product.target.parentElement.parentElement
-                METHODS.createItemInCart(item)
-                // METHODS.deleteItem(item)
-                // EVENTS.addToCartListener()
-                
-            } else {
-                console.log('nop')
-            }
-            // EVENTS.deleteAllItemsListener()
-            // return true
-        },
-        createItemInCart(product){
-            let productCard = document.createElement('tr')
-            let img = product.querySelector('img').src
-            let title = product.querySelector('h4').textContent
-            let price = product.querySelector('.precio span').textContent
-            let id = product.querySelector('a').getAttribute('data-id')
+    deleteAllItemsListener() {
+      let removeAllButton = document.getElementById("vaciar-carrito");
+      removeAllButton.addEventListener("click", METHODS.deleteAllItems);
+
+    },
+  };
+  const METHODS = {
+    start() {
+      EVENTS.addToCartListener();
+      EVENTS.deleteAllItemsListener()
+      EVENTS.deleteItemFromCartListener();
+    //   EVENTS.loadProductsAddedListener()
+    },
+    loadProductAdded(){
+        let productsLS 
+        productsLS = METHODS.checkProductsToBeSaved()
+        console.log('cursos cazxcrgados' ,productsLS)
+        productsLS.forEach( product => {
+            console.log('product en ls' ,product)
+            let productCard = document.createElement("tr")
             productCard.innerHTML = `
             <tr>
+                  <td>
+                    <img src="${product.img}" width=100>
+                   </td>
+                   <td>
+                   ${product.title}
+                   </td>
+                   <td> 
+                   ${product.price}
+                   </td>
+                  <td>
+                     <a href="#" class="borrar-curso" data-id=${product.id}>X</a>
+                </td>
+               </tr>
+                `;
+                let itemListInCart = document.querySelector(".container-products");
+      itemListInCart.appendChild(productCard);
+        })
+    },
+    addItemToCart(product) {
+      product.preventDefault();
+      console.log('producasdasdasdasdto',product)
+    //   console.log('otra cosa', product.querySelector('img').src)
+      if (product.target.classList.contains("agregar-carrito")) {
+        const item = product.target.parentElement.parentElement;
+        METHODS.createItemInCart(item);
+      }
+    },
+    createItemInCart(product) {
+        const card = {
+            img : product.querySelector("img").src,
+            title : product.querySelector("h4").textContent,
+            price : product.querySelector(".precio span").textContent,
+            id : product.querySelector("a").getAttribute("data-id")
+        }
+        let productCard = document.createElement("tr")
+        productCard.innerHTML = `
+        <tr>
               <td>
-                <img src="${img}" width=100>
+                <img src="${card.img}" width=100>
                </td>
                <td>
-               ${title}
+               ${card.title}
                </td>
                <td> 
-               ${price}
+               ${card.price}
                </td>
               <td>
-                 <a href="#" class="borrar-curso" data-id=${id}>X</a>
+                 <a href="#" class="borrar-curso" data-id=${card.id}>X</a>
             </td>
            </tr>
-            `
-            console.log(productCard)
-            let itemListInCart = document.querySelector('#lista-carrito tbody')
-            itemListInCart.appendChild(productCard)
-            EVENTS.deleteItemFromCartListener(productCard)
-        },
-        deleteItem(product){
-              if (product.target.classList.contains('borrar-curso')){
-           product.target.parentElement.parentElement.remove()
+            `;
+      let itemListInCart = document.querySelector(".container-products");
+      itemListInCart.appendChild(productCard);
+      EVENTS.deleteItemFromCartListener(productCard);
+      METHODS.saveProductLocalStorage(card)
+    },
+    deleteItem(product) {
+        let item, itemId
+      if (product.target.classList.contains("borrar-curso")) {
+        product.target.parentElement.parentElement.remove();
+        item = product.target.parentElement.parentElement
+        itemId = item.querySelector('a').getAttribute('data-id')
+      }
+      METHODS.removeItemFromLocalStorage(itemId)
+    },
+    removeItemFromLocalStorage(product){
+        let productsLS
+        productsLS = METHODS.checkProductsToBeSaved()
+        productsLS.forEach( (item, index) => {
+            if ( item.id === product ){
+                productsLS.splice(index,1)
+            }
+        })
+        localStorage.setItem('products', JSON.stringify(productsLS))
+    },
+    deleteAllItems() {
+      let productAdded = document.querySelectorAll(".container-products tr");
+      if (productAdded.length >= 0) {
+        for (let i = 0; i < productAdded.length; i++) {
+          productAdded[i].remove();
         }
-   
-        },
-        deleteAllItems(products){
-            console.log('que llega ', products)
-            console.log('hijo', products.target.parentElement.firstChild)
-            console.log('borra todos los productos', products)
-            // return false
+      }
+      METHODS.emptyLocalStorage()
+    },
+    saveProductLocalStorage(product){
+        console.log(product)
+        let products ;
+        products  = METHODS.checkProductsToBeSaved()
+        products.push(product)
+        // console.log('el item 1',item)
+        localStorage.setItem('products', JSON.stringify(products))
+        
+        // console.log('el item 2',item)
+    },
+    checkProductsToBeSaved(){
+        let productsLS
+        if(localStorage.getItem('products') === null ){
+            productsLS = []
         }
+        else {
+            productsLS = JSON.parse(localStorage.getItem('products'))
+        }
+        return productsLS
+    },
+    emptyLocalStorage(){
+        localStorage.clear()
     }
-    window.addEventListener('load', METHODS.start )
-})()
+  };
+  document.addEventListener('DOMContentLoaded', METHODS.loadProductAdded)
+  window.addEventListener("load", METHODS.start);
+})();

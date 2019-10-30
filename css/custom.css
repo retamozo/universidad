@@ -43,6 +43,7 @@ ul {
 
 .submenu #carrito{
     display: none;
+
 }
 .submenu:hover #carrito{
     display: block;
@@ -52,6 +53,7 @@ ul {
     z-index: 1;
     background-color: white;
     padding: 20px;
+    min-width: 300px;
 }
 .vacio {
     padding: 10px;
@@ -172,4 +174,11 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#741d51', end
 display: block;
 margin-bottom: 10px;
 text-decoration: none;
+}
+#lista-carrito{
+    display: flex;
+    justify-content: space-between;
+}
+.contenedor-descripcion {
+    display: flex;
 }
